@@ -1,4 +1,4 @@
-from .general import code_or_proprietary, amount_field, address, party, account, agent
+from .general import code_or_proprietary, amount_field, address, party_identification, party, account, agent
 
 def pagination(tag):
     return {
@@ -14,7 +14,7 @@ def statement_group_header(tag):
         '_sorting': ['MsgId', 'CreDtTm', 'MsgRcpt', 'MsgPgntn', 'OrgnlBizQry'],
         'message_id': 'MsgId',
         'creation_date_time': 'CreDtTm',
-        'message_recipient': party('MsgRcpt'),
+        'message_recipient': party_identification('MsgRcpt'),
         'message_pagination': pagination('MsgPgntn'),
         'original_business_query': {
             '_self': 'OrgnlBizQry',
@@ -153,7 +153,11 @@ def entry(tag):
         'amount': amount_field('Amt'),
         'credit_debit_indicator': 'CdtDbtInd',
         'reversal_indicator': 'RvslInd',
-        'status': 'Sts',
+        'status': {
+            '_self': 'Sts',
+            '_sorting': ['Cd'],
+            'code': 'Cd'
+        },
         'booking_date': date_or_date_time('BookgDt'),
         'value_date': date_or_date_time('ValDt'),
         'account_servicer_reference': 'AcctSvcrRef',
@@ -211,7 +215,7 @@ def entry(tag):
                 'refs': {
                     '_self': 'Refs',
                     '_sorting': [
-                        'MsgId', 'AcctSvcrRef', 'PmtInfId', 'InstrId', 'EndToEndId', 'TxId', 'MndtId', 'ChqNb', 'ClrSysRef', 'AcctOwnrTxId', 'AcctSvcrTxId',
+                        'MsgId', 'AcctSvcrRef', 'PmtInfId', 'InstrId', 'EndToEndId', 'UETR', 'TxId', 'MndtId', 'ChqNb', 'ClrSysRef', 'AcctOwnrTxId', 'AcctSvcrTxId',
                         'MktInfrstrctrTxId', 'PrcgId', 'Prty'
                     ],
                     'message_id': 'MsgId',
@@ -219,6 +223,7 @@ def entry(tag):
                     'payment_information_id': 'PmtInfId',
                     'instruction_id': 'InstrId',
                     'end_to_end_id': 'EndToEndId',
+                    'end_to_end_uuid': 'UETR',
                     'transaction_id': 'TxId',
                     'mandate_id': 'MndtId',
                     'cheque_number': 'ChqNb',
@@ -316,8 +321,18 @@ def entry(tag):
                     'unstructured': ['Ustrd'],
                     'structured': [{
                         '_self': 'Strd',
-                        '_sorting': []
-                        # TODO
+                        '_sorting': [],
+                        'creditor_reference_information': {
+                            '_self': 'CdtrRefInf',
+                            '_sorting': ['Tp', 'Ref'],
+                            'type': {
+                                '_self': 'Tp',
+                                '_sorting': ['CdOrPrtry'],
+                                'code_or_proprietary': code_or_proprietary('CdOrPrtry')
+                            },
+                            'reference': 'Ref'
+                        },
+                        'additional_remittance_information': 'AddtlRmtInf'
                     }]
                 },
                 'related_dates': {
@@ -380,11 +395,11 @@ def entry(tag):
                 },
                 'return_information': {
                     '_self': 'RtrInf',
-                    '_sorting': ['OrgnlBkTxCd', 'Orgtr', 'Rsn', 'AddtInf'],
+                    '_sorting': ['OrgnlBkTxCd', 'Orgtr', 'Rsn', 'AddtlInf'],
                     'original_bank_transaction_code': bank_transaction_code('OrgnlBkTxCd'),
                     'originator': party('Orgtr'),
                     'reason': code_or_proprietary('Rsn'),
-                    'additional_information': ['AddtInf']
+                    'additional_information': ['AddtlInf']
                 },
                 'coporate_action': {
                     '_self': 'CorpActn',
